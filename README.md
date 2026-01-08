@@ -1,165 +1,268 @@
 # FX Fair Value Model
 
-Un modèle de Fair Value pour le trading FX basé sur des fondamentaux macro-économiques, avec dashboard interactif.
+A quantitative Fair Value model for foreign exchange trading based on macroeconomic fundamentals, featuring an interactive dashboard for analysis and visualization.
 
-## 📊 Aperçu
+## Overview
 
-Ce projet implémente un modèle de Fair Value pour les devises, inspiré des approches institutionnelles. Il utilise des données macro-économiques pour estimer la "juste valeur" d'une devise et identifier les opportunités de trading.
+This project implements a Fair Value model for currency pairs using institutional-grade approaches. It leverages macroeconomic data to estimate the "fair value" of currencies and identify potential trading opportunities through mean-reversion strategies.
 
-![Dashboard Preview](docs/dashboard_preview.png)
+The model uses rolling OLS regressions to capture time-varying relationships between exchange rates and fundamental factors, with optional LASSO-based feature selection for automatic variable screening.
 
-## 🔧 Installation
+## Key Features
 
+- **Multiple Currency Support**: EUR, CHF, CAD, CZK (extensible to other currencies)
+- **Rolling Window Analysis**: Configurable windows (6M, 9M, 12M, 18M, 24M)
+- **Feature Selection**: Manual selection or automatic LASSO-based screening
+- **Interactive Dashboard**: Real-time visualization with Plotly and Dash
+- **Statistical Significance Testing**: Automated t-tests and significance ratios
+- **Backtesting Framework**: Cumulative Fair Value error tracking
+
+## Installation
+
+### Prerequisites
+
+- Python 3.8 or higher
+- pip package manager
+
+### Setup
+
+1. Clone the repository:
 ```bash
-# Cloner le repository
-git clone https://github.com/[ton-username]/fx-fair-value-model.git
-cd fx-fair-value-model
+git clone https://github.com/pablovicente28130/FX-Fair-Value-Model-.git
+cd FX-Fair-Value-Model-
+```
 
-# Installer les dépendances
+2. Install dependencies:
+```bash
 pip install -r requirements.txt
 ```
 
-## 🚀 Utilisation
+### Dependencies
 
-### Lancer le Dashboard
+The project requires the following Python packages:
+- `numpy` (>= 1.20.0) - Numerical computations
+- `pandas` (>= 1.3.0) - Data manipulation
+- `scipy` (>= 1.7.0) - Statistical functions
+- `scikit-learn` (>= 1.0.0) - Machine learning tools (OLS, LASSO)
+- `dash` (>= 2.0.0) - Web dashboard framework
+- `dash-bootstrap-components` (>= 1.0.0) - Dashboard styling
+- `plotly` (>= 5.0.0) - Interactive visualizations
+
+## Usage
+
+### Running the Dashboard
+
+The quickest way to explore the model is through the interactive dashboard:
 
 ```bash
 python dashboard.py data.xlsx
 ```
 
-Puis ouvrir http://localhost:8050 dans un navigateur.
+The dashboard will launch on `http://localhost:8050`. Open this URL in your web browser to access the interface.
 
-### Utiliser le Modèle en Python
+**Dashboard Features:**
+- Configure rolling window size (6M to 24M)
+- Select feature selection method (Manual or LASSO)
+- View OLS regression summaries with statistical significance
+- Explore rolling betas over time (by currency or by factor)
+- Analyze Fair Value errors and trading signals
+- Compare currencies side-by-side
+
+### Using the Model Programmatically
+
+For custom analysis or integration into trading systems:
 
 ```python
 from model import FXFairValueAnalyzer, ModelConfig
 
-# Configuration
+# Configure the model
 config = ModelConfig(
     currencies=['EUR', 'CHF', 'CAD', 'CZK'],
     years_back=10,
-    feature_xcats=['RYLDIRS02Y_NSA', 'CPIH_SA_P1M1ML12', 'INTRGDP_NSA_P1M1ML12_3MMA']
+    selected_features=[
+        'RYLDIRS02Y_NSA',        # 2Y Real Rates
+        'CPIH_SA_P1M1ML12',      # Inflation YoY
+        'INTRGDP_NSA_P1M1ML12_3MMA'  # GDP Growth
+    ]
 )
 
-# Analyse
+# Initialize analyzer
 analyzer = FXFairValueAnalyzer('data.xlsx', config)
 analyzer.load_data()
-analyzer.analyze_all(window_months=12)
 
-# Résultats
-print(analyzer.get_ols_summary())
-print(analyzer.get_significance_ratios())
+# Run analysis with 12-month rolling window
+analyzer.analyze_all(window_months=12, selection_method='manual')
+
+# Retrieve results
+ols_summary = analyzer.get_ols_summary()
+significance_ratios = analyzer.get_significance_ratios()
+fair_value_errors = analyzer.get_fair_value_errors()
+
+print(ols_summary)
+print(significance_ratios)
 ```
 
-## 📁 Structure du Projet
+### Command-Line Arguments
 
-```
-fx-fair-value-model/
-├── model.py          # Logique du modèle (data loading, régression, fair value)
-├── dashboard.py      # Dashboard Dash interactif
-├── requirements.txt  # Dépendances Python
-├── data.xlsx         # Données (non incluses, à fournir)
-└── README.md         # Ce fichier
+The dashboard script accepts the data file path as an argument:
+
+```bash
+python dashboard.py [DATA_FILE_PATH]
 ```
 
-## 📈 Méthodologie
+If no path is provided, it defaults to `data.xlsx` in the current directory.
 
-### Variables Explicatives
+## Project Structure
 
-Le modèle utilise les facteurs macro suivants :
+```
+FX-Fair-Value-Model-/
+├── model.py              # Core model implementation
+│   ├── DataLoader        # Data loading and preprocessing
+│   ├── ModelConfig       # Configuration dataclass
+│   ├── FXFairValueAnalyzer  # Main analysis engine
+│   └── Backtester        # Backtesting utilities
+├── dashboard.py          # Interactive Dash application
+├── data.xlsx             # Macroeconomic data (JPMaQS format)
+├── requirements.txt      # Python dependencies
+├── .gitignore           # Git exclusions
+└── README.md            # This file
+```
 
-| Variable | Description |
-|----------|-------------|
-| `RYLDIRS02Y_NSA` | Taux réels 2 ans |
-| `RYLDIRS05Y_NSA` | Taux réels 5 ans |
-| `CPIH_SA_P1M1ML12` | Inflation headline YoY |
-| `CPIC_SA_P1M1ML12` | Inflation core YoY |
-| `INTRGDP_NSA_P1M1ML12_3MMA` | Croissance PIB YoY |
+## Methodology
 
-### Approche
+### Macroeconomic Factors
 
-1. **Régression OLS** : Estimation des sensibilités (betas) sur une fenêtre glissante
-2. **Rolling OLS** : Capture de l'évolution temporelle des relations
-3. **Fair Value** : Prédiction basée sur les facteurs macro
-4. **Signal** : Écart entre le spot et la Fair Value
+The model uses the following fundamental drivers:
 
-### Interprétation
+| Variable Code | Description | Category |
+|--------------|-------------|----------|
+| `RYLDIRS02Y_NSA` | 2-Year Real Interest Rates | Interest Rates |
+| `RYLDIRS05Y_NSA` | 5-Year Real Interest Rates | Interest Rates |
+| `CPIH_SA_P1M1ML12` | Headline Inflation (YoY) | Inflation |
+| `CPIC_SA_P1M1ML12` | Core Inflation (YoY) | Inflation |
+| `INTRGDP_NSA_P1M1ML12_3MMA` | GDP Growth (YoY, 3M MA) | Growth |
+| `DU02YXR_NSA` | 2-Year Duration | Risk |
+| `DU05YXR_NSA` | 5-Year Duration | Risk |
+| `PCREDITBN_SJA_P1M1ML12` | Private Credit Growth | Credit |
 
-- **Erreur positive** → Devise **surévaluée** → Signal de vente
-- **Erreur négative** → Devise **sous-évaluée** → Signal d'achat
+### Modeling Approach
 
-## 🖥️ Dashboard
+1. **Data Preprocessing**:
+   - Weekly resampling of macroeconomic indicators
+   - Forward-fill for missing values
+   - Standardization of features for LASSO selection
 
-Le dashboard interactif permet de :
+2. **Rolling OLS Regression**:
+   - Estimates time-varying sensitivities (betas) using rolling windows
+   - Captures evolving relationships between FX rates and fundamentals
+   - Accounts for structural breaks and regime changes
 
-- Visualiser les résultats des régressions OLS
-- Explorer les rolling betas par devise ou par facteur
-- Analyser les ratios de significativité
-- Suivre les erreurs de Fair Value cumulées
-- Comparer les signaux entre devises
+3. **Feature Selection**:
+   - **Manual**: Use predefined set of features based on economic theory
+   - **LASSO**: Automatic feature selection with cross-validation (TimeSeriesSplit)
 
-### Fonctionnalités
+4. **Fair Value Calculation**:
+   - Predicted FX rate based on current fundamental values
+   - Uses most recent beta estimates from rolling regression
 
-- **Sélection de la fenêtre** : 6M, 9M, 12M, 18M, 24M
-- **Graphiques interactifs** : zoom, hover, export
-- **Tableaux formatés** : significativité avec \* et \*\*
-- **Mise à jour en temps réel** : recalcul automatique
+5. **Trading Signal**:
+   - **Positive error** (Spot > Fair Value): Currency is overvalued → Sell signal
+   - **Negative error** (Spot < Fair Value): Currency is undervalued → Buy signal
 
-## 📊 Format des Données
+### Statistical Significance
 
-Le modèle attend des données au format JPMaQS (format long) :
+The model computes t-statistics for each beta coefficient and tracks:
+- Significance at 5% level (*): |t| > 1.96
+- Significance at 1% level (**): |t| > 2.58
+- Significance ratio: Percentage of time each factor is significant
 
-| real_date | cid | xcat | value |
-|-----------|-----|------|-------|
-| 2020-01-01 | EUR | RYLDIRS02Y_NSA | 0.5 |
-| 2020-01-01 | EUR | CPIH_SA_P1M1ML12 | 1.2 |
-| ... | ... | ... | ... |
+## Data Format
 
-### Devises supportées
+The model expects data in JPMaQS format (long format with specific columns):
 
-EUR, CHF, CAD, CZK (et toute devise avec données `FXXR_NSA`)
+| Column | Type | Description |
+|--------|------|-------------|
+| `real_date` | datetime | Observation date |
+| `cid` | string | Currency identifier (e.g., 'EUR', 'USD') |
+| `xcat` | string | Variable category code |
+| `value` | float | Observed value |
 
-## ⚠️ Limitations
+**Example:**
+```
+real_date    | cid | xcat                      | value
+-------------|-----|---------------------------|------
+2020-01-01   | EUR | RYLDIRS02Y_NSA            | 0.52
+2020-01-01   | EUR | CPIH_SA_P1M1ML12          | 1.31
+2020-01-01   | EUR | INTRGDP_NSA_P1M1ML12_3MMA | 1.15
+```
 
-1. **R² faible** : Normal pour les modèles FX à court terme
-2. **Modèle linéaire** : Ne capture pas les non-linéarités
-3. **Pas de coûts** : Le signal ne tient pas compte du spread/carry
-4. **Mean-reversion** : Suppose un retour vers la Fair Value
+### Adding New Currencies
 
-## 🔬 Développement
+Ensure your data includes:
+- FX rate series: `FXXR_NSA` (e.g., `EURNOK_FXXR_NSA` for EUR vs NOK)
+- All required fundamental indicators for the new currency
 
-### Ajouter des facteurs
-
-Modifier `MODEL_CONFIG` dans `dashboard.py` :
-
+Update the configuration:
 ```python
-MODEL_CONFIG = ModelConfig(
-    feature_xcats=[
+config = ModelConfig(
+    currencies=['EUR', 'CHF', 'CAD', 'CZK', 'GBP'],  # Add GBP
+)
+```
+
+### Adding New Factors
+
+1. Add the variable code to `all_feature_xcats` in `ModelConfig`
+2. Add a readable name to `VARIABLE_NAMES` dictionary in `model.py`
+3. Include the feature in `selected_features` (for manual mode)
+
+Example:
+```python
+config = ModelConfig(
+    all_feature_xcats=[
         'RYLDIRS02Y_NSA',
         'CPIH_SA_P1M1ML12',
         'INTRGDP_NSA_P1M1ML12_3MMA',
-        'NOUVEAU_FACTEUR',  # Ajouter ici
+        'EQXR_NSA',  # Add equity returns as new factor
+    ],
+    selected_features=[
+        'RYLDIRS02Y_NSA',
+        'CPIH_SA_P1M1ML12',
+        'INTRGDP_NSA_P1M1ML12_3MMA',
+        'EQXR_NSA',
     ]
 )
 ```
 
-### Ajouter des devises
+## Model Limitations
 
-```python
-MODEL_CONFIG = ModelConfig(
-    currencies=['EUR', 'CHF', 'CAD', 'CZK', 'GBP'],  # Ajouter ici
-)
-```
+1. **Low R-squared**: Typical for short-term FX models due to high market noise and non-fundamental factors
+2. **Linear Assumptions**: Does not capture non-linear relationships or interaction effects
+3. **No Transaction Costs**: Signals do not account for bid-ask spreads, carry costs, or slippage
+4. **Mean-Reversion Assumption**: Assumes currencies eventually revert to fair value, which may not hold during persistent trends
+5. **Look-Ahead Bias**: Ensure data timestamps reflect information availability in live trading
+6. **Regime Dependence**: Relationships may break down during crisis periods or structural shifts
 
-## 📚 Références
+## Technical Implementation Notes
 
-- Inspiré de [FX Fair Value Model](https://github.com/NicolasHurbin/FX-Faire-Value-Model)
-- Données : JPMaQS Quantamental Indicators
+- **Data Loading**: Custom XML parser for strict Excel format compatibility (uses `zipfile` instead of `openpyxl`)
+- **Missing Data**: Forward-fill strategy assumes persistence of macro indicators between releases
+- **Statistical Tests**: Two-tailed t-tests for coefficient significance
+- **Dashboard**: Asynchronous callbacks prevent blocking during recalculation
 
-## 👤 Auteur
+## References
 
-[Ton nom]
+- Inspired by [Nicolas Hurbin's FX Fair Value Model](https://github.com/NicolasHurbin/FX-Faire-Value-Model)
+- Data source: JPMaQS Quantamental Indicators
+- Methodology: Standard institutional FX Fair Value approaches
 
-## 📄 License
+## Author
+
+**Pablo Vicente**
+
+## License
 
 MIT License
+
+---
+
+**Disclaimer**: This model is for educational and research purposes only. It should not be used as the sole basis for trading decisions. Past performance does not guarantee future results. Always conduct thorough due diligence and risk assessment before trading.
