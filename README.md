@@ -1,6 +1,6 @@
 # FX Fair Value Model
 
-A quantitative Fair Value model for foreign exchange trading based on macroeconomic fundamentals, featuring an interactive dashboard for analysis and visualization.
+A Fair Value model for FX trading based on macroeconomic fundamentals, using LASSO and OLS regressions. 
 
 ## Overview
 
