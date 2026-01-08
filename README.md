@@ -17,100 +17,63 @@ The model uses rolling OLS regressions to capture time-varying relationships bet
 - **Statistical Significance Testing**: Automated t-tests and significance ratios
 - **Backtesting Framework**: Cumulative Fair Value error tracking
 
-## Installation
+## Getting Started
 
 ### Prerequisites
 
-- Python 3.8 or higher
-- pip package manager
+Before running the model, ensure you have:
+- **Python 3.8 or higher** installed on your computer
+- **pip** (Python package installer, usually comes with Python)
 
-### Setup
+### Installation & Running the Model
 
-1. Clone the repository:
+Follow these steps to get the model running on your computer:
+
+**Step 1: Download the project**
 ```bash
 git clone https://github.com/pablovicente28130/FX-Fair-Value-Model-.git
 cd FX-Fair-Value-Model-
 ```
 
-2. Install dependencies:
+**Step 2: Install required packages**
 ```bash
 pip install -r requirements.txt
 ```
 
-### Dependencies
+This will install: `numpy`, `pandas`, `scipy`, `scikit-learn`, `dash`, `plotly`, and other dependencies.
 
-The project requires the following Python packages:
-- `numpy` (>= 1.20.0) - Numerical computations
-- `pandas` (>= 1.3.0) - Data manipulation
-- `scipy` (>= 1.7.0) - Statistical functions
-- `scikit-learn` (>= 1.0.0) - Machine learning tools (OLS, LASSO)
-- `dash` (>= 2.0.0) - Web dashboard framework
-- `dash-bootstrap-components` (>= 1.0.0) - Dashboard styling
-- `plotly` (>= 5.0.0) - Interactive visualizations
-
-## Usage
-
-### Running the Dashboard
-
-The quickest way to explore the model is through the interactive dashboard:
-
+**Step 3: Launch the dashboard**
 ```bash
-python dashboard.py data.xlsx
+python dashboard.py
 ```
 
-The dashboard will launch on `http://localhost:8050`. Open this URL in your web browser to access the interface.
+**Step 4: Open your browser**
 
-**Dashboard Features:**
-- Configure rolling window size (6M to 24M)
-- Select feature selection method (Manual or LASSO)
-- View OLS regression summaries with statistical significance
-- Explore rolling betas over time (by currency or by factor)
-- Analyze Fair Value errors and trading signals
-- Compare currencies side-by-side
+Go to `http://localhost:8050` in your web browser to access the interactive dashboard.
 
-### Using the Model Programmatically
+That's it! The model is now running on your computer.
 
-For custom analysis or integration into trading systems:
+### What You Can Do in the Dashboard
 
-```python
-from model import FXFairValueAnalyzer, ModelConfig
+Once the dashboard is open, you can:
+- **Adjust rolling window size**: Choose between 6, 9, 12, 18, or 24 months
+- **Select feature selection method**: Manual (predefined factors) or LASSO (automatic)
+- **View regression results**: See which economic factors are statistically significant
+- **Explore beta evolution**: Track how factor sensitivities change over time
+- **Analyze Fair Value signals**: Identify overvalued/undervalued currencies
+- **Compare currencies**: Side-by-side analysis of EUR, CHF, CAD, and CZK
 
-# Configure the model
-config = ModelConfig(
-    currencies=['EUR', 'CHF', 'CAD', 'CZK'],
-    years_back=10,
-    selected_features=[
-        'RYLDIRS02Y_NSA',        # 2Y Real Rates
-        'CPIH_SA_P1M1ML12',      # Inflation YoY
-        'INTRGDP_NSA_P1M1ML12_3MMA'  # GDP Growth
-    ]
-)
+### Troubleshooting
 
-# Initialize analyzer
-analyzer = FXFairValueAnalyzer('data.xlsx', config)
-analyzer.load_data()
-
-# Run analysis with 12-month rolling window
-analyzer.analyze_all(window_months=12, selection_method='manual')
-
-# Retrieve results
-ols_summary = analyzer.get_ols_summary()
-significance_ratios = analyzer.get_significance_ratios()
-fair_value_errors = analyzer.get_fair_value_errors()
-
-print(ols_summary)
-print(significance_ratios)
-```
-
-### Command-Line Arguments
-
-The dashboard script accepts the data file path as an argument:
-
+If the command `python dashboard.py` doesn't work, try:
 ```bash
-python dashboard.py [DATA_FILE_PATH]
+python3 dashboard.py
 ```
 
-If no path is provided, it defaults to `data.xlsx` in the current directory.
+If you don't have the `data.xlsx` file, you can specify a different path:
+```bash
+python dashboard.py /path/to/your/data.xlsx
+```
 
 ## Project Structure
 
