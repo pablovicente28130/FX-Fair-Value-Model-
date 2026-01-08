@@ -251,7 +251,6 @@ config = ModelConfig(
 
 ## References
 
-- Inspired by [Nicolas Hurbin's FX Fair Value Model](https://github.com/NicolasHurbin/FX-Faire-Value-Model)
 - Data source: JPMaQS Quantamental Indicators
 - Methodology: Standard institutional FX Fair Value approaches
 
@@ -259,9 +258,6 @@ config = ModelConfig(
 
 **Pablo Vicente**
 
-## License
-
-MIT License
 
 ---
 
