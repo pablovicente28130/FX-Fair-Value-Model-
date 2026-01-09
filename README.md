@@ -221,7 +221,3 @@ config = ModelConfig(
 
 **Pablo Vicente**
 
-
----
-
-**Disclaimer**: This model is for educational and research purposes only. It should not be used as the sole basis for trading decisions. Past performance does not guarantee future results. Always conduct thorough due diligence and risk assessment before trading.
